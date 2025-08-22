@@ -17,6 +17,19 @@ exports.getUsers = async (req, res) => {
   }
 };
 
+exports.getRecentUsers = async (req, res) => {
+  try {
+    const users = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('name email role createdAt');
+    res.json(users);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+}
+
 exports.blockUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);

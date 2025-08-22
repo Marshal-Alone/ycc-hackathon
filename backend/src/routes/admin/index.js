@@ -6,6 +6,7 @@ const adminController = require('../../controllers/admin');
 router.post('/login', adminController.login);
 
 // User management routes
+router.get('/recent-users', adminController.getRecentUsers);
 router.get('/users', adminController.getUsers);
 router.put('/users/:id/block', adminController.blockUser);
 router.put('/users/:id/unblock', adminController.unblockUser);
