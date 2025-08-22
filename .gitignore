@@ -1,0 +1,47 @@
+# Ignore user-specific directories and files
+AppData/
+Application Data/
+Cookies/
+Documents/My Music/
+Documents/My Pictures/
+Documents/My Videos/
+Local Settings/
+My Documents/
+NetHood/
+PrintHood/
+Recent/
+SendTo/
+Start Menu/
+Templates/
+.MemuHyperv/
+.android/
+.bash_history
+.cursor/
+.gitconfig
+.lesshst
+.node_repl_history
+.vscode/
+OneDrive/
+"Saved Games/"
+Searches/
+Videos/
+battery-report.html
+ntuser.dat
+ntuser.dat.LOG1
+ntuser.dat.LOG2
+ntuser.ini
+upload-ninja-notes/
+
+# Ignore Node.js modules
+node_modules/
+
+# Ignore build output
+dist/
+build/
+
+# Ignore log files
+*.log
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
