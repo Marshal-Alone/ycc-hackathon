@@ -1,12 +1,14 @@
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') }); // Load environment variables at the very beginning, specifying path
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
 const connectDB = require('./src/config/db');
-
-connectDB();
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// Connect to MongoDB after environment variables are loaded
+connectDB();
 
 app.use(cors());
 app.use(express.json());

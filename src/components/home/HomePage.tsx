@@ -82,12 +82,17 @@ type Listing = {
 
 import API from '../../api';
 
-const categories = [
+interface CategoryCount {
+  machines: number;
+  tools: number;
+  land: number;
+}
+
+const initialCategories = [
   {
     id: "machines",
     name: "Machines",
     icon: Tractor,
-    count: 45,
     color: "bg-red-50 text-red-600 border-red-200",
     description: "Tractors, harvesters, and heavy equipment",
   },
@@ -95,7 +100,6 @@ const categories = [
     id: "tools",
     name: "Tools",
     icon: Wrench,
-    count: 67,
     color: "bg-amber-50 text-amber-600 border-amber-200",
     description: "Hand tools, power tools, and implements",
   },
@@ -103,7 +107,6 @@ const categories = [
     id: "land",
     name: "Land",
     icon: Leaf,
-    count: 23,
     color: "bg-green-50 text-green-600 border-green-200",
     description: "Farmland, orchards, and storage spaces",
   },
@@ -129,17 +132,28 @@ export function HomePage({
 }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [listings, setListings] = useState<Listing[]>([]);
+  const [categoryCounts, setCategoryCounts] = useState<CategoryCount>({ machines: 0, tools: 0, land: 0 });
 
   useEffect(() => {
-    const fetchListings = async () => {
+    const fetchListingsAndCategoryCounts = async () => {
       try {
-        const { data } = await API.get('/listings');
-        setListings(data);
+        const { data: listingsData } = await API.get('/listings');
+        setListings(listingsData);
+
+        // Calculate category counts from fetched listings
+        const counts: CategoryCount = { machines: 0, tools: 0, land: 0 };
+        listingsData.forEach((listing: Listing) => {
+          if (listing.category === 'machines') counts.machines++;
+          else if (listing.category === 'tools') counts.tools++;
+          else if (listing.category === 'land') counts.land++;
+        });
+        setCategoryCounts(counts);
+
       } catch (error) {
         console.error(error);
       }
     };
-    fetchListings();
+    fetchListingsAndCategoryCounts();
   }, [refreshTrigger]); // Add refreshTrigger to dependency array
 
   const handleSearch = (e: React.FormEvent) => {
@@ -309,7 +323,7 @@ export function HomePage({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {categories.map((category) => (
+            {initialCategories.map((category) => (
               <Card
                 key={category.id}
                 className="cursor-pointer hover:shadow-xl transition-all duration-300 border-2 hover:border-green-200 group overflow-hidden"
@@ -330,7 +344,7 @@ export function HomePage({
                       </p>
                       <div className="flex items-center justify-between">
                         <span className="text-2xl font-bold text-green-600">
-                          {category.count}
+                          {categoryCounts[category.id as keyof CategoryCount]}
                         </span>
                         <span className="text-sm text-muted-foreground">
                           listings

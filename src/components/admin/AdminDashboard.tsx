@@ -53,88 +53,88 @@ type Stats = {
 };
 
 const mockUsers = [
-  {
-    id: '1',
-    name: 'Ramesh Kumar',
-    email: 'ramesh@email.com',
-    status: 'active',
-    joinDate: '2024-01-15',
-    totalListings: 3,
-    totalBookings: 8,
-    location: 'Pune, Maharashtra'
-  },
-  {
-    id: '2',
-    name: 'Suresh Patil',
-    email: 'suresh@email.com',
-    status: 'active',
-    joinDate: '2024-01-10',
-    totalListings: 5,
-    totalBookings: 15,
-    location: 'Pune, Maharashtra'
-  },
-  {
-    id: '3',
-    name: 'Amit Sharma',
-    email: 'amit@email.com',
-    status: 'pending',
-    joinDate: '2024-01-20',
-    totalListings: 2,
-    totalBookings: 3,
-    location: 'Mumbai, Maharashtra'
-  }
+  // {
+  //   id: '1',
+  //   name: 'Ramesh Kumar',
+  //   email: 'ramesh@email.com',
+  //   status: 'active',
+  //   joinDate: '2024-01-15',
+  //   totalListings: 3,
+  //   totalBookings: 8,
+  //   location: 'Pune, Maharashtra'
+  // },
+  // {
+  //   id: '2',
+  //   name: 'Suresh Patil',
+  //   email: 'suresh@email.com',
+  //   status: 'active',
+  //   joinDate: '2024-01-10',
+  //   totalListings: 5,
+  //   totalBookings: 15,
+  //   location: 'Pune, Maharashtra'
+  // },
+  // {
+  //   id: '3',
+  //   name: 'Amit Sharma',
+  //   email: 'amit@email.com',
+  //   status: 'pending',
+  //   joinDate: '2024-01-20',
+  //   totalListings: 2,
+  //   totalBookings: 3,
+  //   location: 'Mumbai, Maharashtra'
+  // }
 ];
 
 const mockListings = [
-  {
-    id: '1',
-    title: 'John Deere 5310 Tractor',
-    owner: 'Suresh Patil',
-    category: 'machines',
-    price: 1500,
-    status: 'active',
-    dateAdded: '2024-01-18',
-    bookings: 5,
-    rating: 4.8,
-    flagged: false
-  },
-  {
-    id: '2',
-    title: 'Suspicious Cheap Harvester',
-    owner: 'Unknown User',
-    category: 'machines',
-    price: 100,
-    status: 'pending',
-    dateAdded: '2024-01-22',
-    bookings: 0,
-    rating: 0,
-    flagged: true
-  }
+  // {
+  //   id: '1',
+  //   title: 'John Deere 5310 Tractor',
+  //   owner: 'Suresh Patil',
+  //   category: 'machines',
+  //   price: 1500,
+  //   status: 'active',
+  //   dateAdded: '2024-01-18',
+  //   bookings: 5,
+  //   rating: 4.8,
+  //   flagged: false
+  // },
+  // {
+  //   id: '2',
+  //   title: 'Suspicious Cheap Harvester',
+  //   owner: 'Unknown User',
+  //   category: 'machines',
+  //   price: 100,
+  //   status: 'pending',
+  //   dateAdded: '2024-01-22',
+  //   bookings: 0,
+  //   rating: 0,
+  //   flagged: true
+  // }
 ];
 
 const mockBookings = [
-  {
-    id: '1',
-    listing: 'John Deere 5310 Tractor',
-    renter: 'Ramesh Kumar',
-    owner: 'Suresh Patil',
-    startDate: '2024-01-25',
-    endDate: '2024-01-27',
-    status: 'confirmed',
-    amount: 4500,
-    commission: 450
-  },
-  {
-    id: '2',
-    listing: 'Rotary Tiller Set',
-    renter: 'Raj Patel',
-    owner: 'Amit Sharma',
-    startDate: '2024-01-28',
-    endDate: '2024-01-30',
-    status: 'disputed',
-    amount: 2400,
-    commission: 240
-  }
+  // {
+  //   id: '1',
+  //   listing: 'John Deere 5310 Tractor',
+  //   renter: 'Ramesh Kumar',
+  //   owner: 'Suresh Patil',
+  //   startDate: '2024-01-25',
+  //   endDate: '2024-01-27',
+  //   status: 'confirmed',
+  //   amount: 4500,
+  //   commission: 450
+  // },
+  // {
+  //   id: '2',
+  //   listing: 'Rotary Tiller Set',
+  //   renter: 'Raj Patel',
+  //   owner: 'Amit Sharma',
+  //   startDate: '2024-01-28',
+  //   endDate: '2024-01-30',
+  //   status: 'disputed',
+  //   amount: 2400,
+  //   commission: 240
+  // }
 ];
 
 export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboardProps) {

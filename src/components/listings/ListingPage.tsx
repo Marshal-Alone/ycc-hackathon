@@ -50,8 +50,8 @@ interface ListingPageProps {
 }
 
 const categories = [
-  { value: 'machine', label: 'Machines', subcategories: ['Tractor', 'Harvester', 'Cultivator', 'Thresher', 'Seeder'] },
-  { value: 'tool', label: 'Tools', subcategories: ['Rotary Tiller', 'Disc Harrow', 'Plough', 'Sprayer', 'Irrigation Equipment'] },
+  { value: 'machines', label: 'Machines', subcategories: ['Tractor', 'Harvester', 'Cultivator', 'Thresher', 'Seeder'] },
+  { value: 'tools', label: 'Tools', subcategories: ['Rotary Tiller', 'Disc Harrow', 'Plough', 'Sprayer', 'Irrigation Equipment'] },
   { value: 'land', label: 'Land', subcategories: ['Crop Land', 'Orchard', 'Warehouse', 'Storage', 'Processing Unit'] }
 ];
 

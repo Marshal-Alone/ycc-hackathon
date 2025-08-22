@@ -1,9 +1,14 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+// Ensure dotenv is configured here as well, in case it's called before index.js fully loads it
+require('dotenv').config(); 
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
+    const mongoURI = process.env.MONGO_URI;
+    if (!mongoURI) {
+      throw new Error('MONGO_URI is not defined in environment variables.');
+    }
+    await mongoose.connect(mongoURI, {
       ssl: true,
       tls: true,
     });

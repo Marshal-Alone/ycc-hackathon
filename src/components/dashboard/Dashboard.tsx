@@ -22,7 +22,8 @@ import {
   Package,
   Eye,
   Heart,
-  BarChart3
+  BarChart3,
+  ShoppingCart // Import ShoppingCart icon
 } from 'lucide-react';
 import api from '../../api'; // Import API instance
 import { toast } from 'sonner'; // Import toast for notifications
@@ -170,9 +171,10 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
     totalEarnings: mockBookings
       .filter(b => b.type === 'incoming' && b.status === 'completed')
       .reduce((sum, b) => sum + b.total, 0),
-    avgRating: 4.7, // This would ideally be dynamic
-    totalViews: myListings.reduce((sum, listing) => sum + (listing.views || 0), 0), // Use dynamic data, with fallback
-    pendingRequests: mockBookings.filter(b => b.status === 'pending' && b.type === 'incoming').length
+    totalRentedItems: mockBookings.filter(b => b.status === 'completed' && b.type === 'outgoing').length,
+    totalExpense: mockBookings
+      .filter(b => b.type === 'outgoing' && b.status === 'completed')
+      .reduce((sum, b) => sum + b.total, 0),
   };
 
   return (
@@ -260,41 +262,28 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-amber-50 to-amber-100 hover:shadow-xl transition-all duration-200">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl transition-all duration-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-semibold text-amber-700">Average Rating</CardTitle>
-                  <Star className="h-5 w-5 text-amber-600" />
+                  <CardTitle className="text-sm font-semibold text-orange-700">Total Rented Items</CardTitle>
+                  <ShoppingCart className="h-5 w-5 text-orange-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-amber-900">{stats.avgRating}</div>
-                  <p className="text-xs text-amber-600 mt-1">
-                    Based on {mockBookings.length} reviews
+                  <div className="text-3xl font-bold text-orange-900">{stats.totalRentedItems}</div>
+                  <p className="text-xs text-orange-600 mt-1">
+                    Items you have rented out
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100 hover:shadow-xl transition-all duration-200">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100 hover:shadow-xl transition-all duration-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-semibold text-indigo-700">Total Views</CardTitle>
-                  <Eye className="h-5 w-5 text-indigo-600" />
+                  <CardTitle className="text-sm font-semibold text-red-700">Total Expense</CardTitle>
+                  <DollarSign className="h-5 w-5 text-red-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-indigo-900">{stats.totalViews}</div>
-                  <p className="text-xs text-indigo-600 mt-1">
-                    Across all listings
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 hover:shadow-xl transition-all duration-200">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-semibold text-purple-700">Pending Requests</CardTitle>
-                  <Clock className="h-5 w-5 text-purple-600" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold text-purple-900">{stats.pendingRequests}</div>
-                  <p className="text-xs text-purple-600 mt-1">
-                    Awaiting your response
+                  <div className="text-3xl font-bold text-red-900">₹{stats.totalExpense.toLocaleString()}</div>
+                  <p className="text-xs text-red-600 mt-1">
+                    Total spent on rentals
                   </p>
                 </CardContent>
               </Card>
