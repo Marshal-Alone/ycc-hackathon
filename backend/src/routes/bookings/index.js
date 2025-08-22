@@ -24,4 +24,9 @@ router.put('/:id/approve', auth, bookingController.approveBooking);
 // @access  Private
 router.put('/:id/decline', auth, bookingController.declineBooking);
 
+// @route   GET api/bookings/owner
+// @desc    Get all bookings for a specific owner
+// @access  Private
+router.get('/owner', auth, bookingController.getBookingsByOwner);
+
 module.exports = router;
