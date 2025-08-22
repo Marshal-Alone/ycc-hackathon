@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback } from '../ui/avatar';
-import { 
+import {
   ArrowLeft,
   Plus,
   Edit,
@@ -118,6 +118,8 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
   const [activeTab, setActiveTab] = useState('overview');
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [isLoadingMyListings, setIsLoadingMyListings] = useState(true);
+  const [myBookings, setMyBookings] = useState([]);
+  const [isLoadingMyBookings, setIsLoadingMyBookings] = useState(true);
 
   useEffect(() => {
     const fetchMyListings = async () => {
@@ -135,7 +137,25 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
         setIsLoadingMyListings(false);
       }
     };
+
+    const fetchMyBookings = async () => {
+      if (!user) {
+        setIsLoadingMyBookings(false);
+        return;
+      }
+      try {
+        const { data } = await api.get('/bookings/owner');
+        setMyBookings(data);
+      } catch (error) {
+        console.error('Error fetching my bookings:', error);
+        toast.error('Failed to load your bookings.');
+      } finally {
+        setIsLoadingMyBookings(false);
+      }
+    };
+
     fetchMyListings();
+    fetchMyBookings();
   }, [user, refreshTrigger]); // Re-fetch when user changes or refreshTrigger is updated
 
   const handleApproveBooking = (bookingId: string) => {
@@ -165,17 +185,29 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
     }
   };
 
-  const stats = {
-    totalListings: myListings.length, // Use dynamic data
-    activeBookings: mockBookings.filter(b => b.status === 'confirmed').length,
-    totalEarnings: mockBookings
-      .filter(b => b.type === 'incoming' && b.status === 'completed')
-      .reduce((sum, b) => sum + b.total, 0),
-    totalRentedItems: mockBookings.filter(b => b.status === 'completed' && b.type === 'outgoing').length,
-    totalExpense: mockBookings
-      .filter(b => b.type === 'outgoing' && b.status === 'completed')
-      .reduce((sum, b) => sum + b.total, 0),
-  };
+const stats = {
+  totalListings: myListings.length, // dynamic
+
+  // Active bookings (from both branches, same calculation)
+  activeBookings: myBookings.filter(b => b.status === 'confirmed').length,
+
+  // Total earnings (pick correct field)
+  totalEarnings: myBookings
+    .filter(b => b.status === 'completed')
+    .reduce((sum, b) => sum + (b.totalPrice || b.total), 0),
+
+  // Total rented items / total expense (from dashboard branch)
+  totalRentedItems: myBookings.filter(b => b.status === 'completed' && b.type === 'outgoing').length,
+  totalExpense: myBookings
+    .filter(b => b.type === 'outgoing' && b.status === 'completed')
+    .reduce((sum, b) => sum + (b.total || b.totalPrice), 0),
+
+  // Extra stats from main branch
+  avgRating: 4.7, // ideally dynamic
+  totalViews: myListings.reduce((sum, listing) => sum + (listing.views || 0), 0),
+  pendingRequests: myBookings.filter(b => b.status === 'pending').length
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -183,8 +215,8 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
       <header className="border-b bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => onNavigate('home')}
               className="hover:bg-green-50 hover:text-green-700 transition-colors"
             >
@@ -230,9 +262,6 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-blue-900">{stats.totalListings}</div>
-                  <p className="text-xs text-blue-600 mt-1">
-                    +2 from last month
-                  </p>
                 </CardContent>
               </Card>
 
@@ -242,10 +271,7 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                   <Calendar className="h-5 w-5 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-green-900">{stats.activeBookings}</div>
-                  <p className="text-xs text-green-600 mt-1">
-                    Currently rented out
-                  </p>
+                  <div className="text-3xl font-bold text-green-900">{myBookings.filter(b => b.status === 'confirmed').length}</div>
                 </CardContent>
               </Card>
 
@@ -325,24 +351,24 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                   <CardDescription>Get things done faster</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Button 
-                    onClick={() => onNavigate('listing')} 
+                  <Button
+                    onClick={() => onNavigate('listing')}
                     className="w-full justify-start h-12 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
                   >
                     <Plus className="h-4 w-4 mr-3" />
                     Add New Listing
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => onNavigate('chat')} 
+                  <Button
+                    variant="outline"
+                    onClick={() => onNavigate('chat')}
                     className="w-full justify-start h-12 border-2 hover:bg-blue-50 hover:border-blue-200"
                   >
                     <MessageCircle className="h-4 w-4 mr-3" />
                     Check Messages
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => onNavigate('search')} 
+                  <Button
+                    variant="outline"
+                    onClick={() => onNavigate('search')}
                     className="w-full justify-start h-12 border-2 hover:bg-purple-50 hover:border-purple-200"
                   >
                     <Package className="h-4 w-4 mr-3" />
@@ -353,114 +379,6 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
             </div>
           </TabsContent>
 
-          <TabsContent value="listings" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold">My Listings</h2>
-                <p className="text-muted-foreground">Manage your equipment and land listings</p>
-              </div>
-              <Button 
-                onClick={() => onNavigate('listing')}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Listing
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {isLoadingMyListings ? (
-                <p>Loading your listings...</p>
-              ) : myListings.length === 0 ? (
-                <p>You have no listings yet. Click "Add New Listing" to create one.</p>
-              ) : (
-                myListings.map((listing) => (
-                  <Card key={listing._id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
-                    <div className="aspect-video bg-muted overflow-hidden relative">
-                      <img
-                        src={listing.images[0]?.url || 'https://via.placeholder.com/100'} // Use first image or placeholder
-                        alt={listing.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-3 left-3">
-                        <Badge variant={listing.isApproved ? 'default' : 'secondary'} className="shadow-lg">
-                          {listing.isApproved ? 'Approved' : 'Pending'}
-                        </Badge>
-                      </div>
-                      {/* Performance badge (if applicable, needs backend data) */}
-                      {/* <div className="absolute top-3 right-3">
-                        <Badge variant="outline" className="bg-white/90 backdrop-blur-sm">
-                          {listing.performance}
-                        </Badge>
-                      </div> */}
-                    </div>
-                    <CardContent className="p-5">
-                      <div className="space-y-4">
-                        <div>
-                          <h3 className="font-semibold text-lg mb-1">{listing.title}</h3>
-                          <p className="text-2xl font-bold text-green-600">
-                            ₹{listing.price}<span className="text-sm text-muted-foreground">/{listing.priceType}</span>
-                          </p>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                          <div>
-                            <div className="flex items-center justify-center space-x-1">
-                              <Eye className="h-4 w-4 text-blue-500" />
-                              <span className="font-semibold">{listing.views || 0}</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">Views</span>
-                          </div>
-                          <div>
-                            <div className="flex items-center justify-center space-x-1">
-                              <Heart className="h-4 w-4 text-red-500" />
-                              <span className="font-semibold">{listing.likes || 0}</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">Likes</span>
-                          </div>
-                          <div>
-                            <div className="flex items-center justify-center space-x-1">
-                              <Users className="h-4 w-4 text-green-500" />
-                              <span className="font-semibold">{listing.bookings || 0}</span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">Bookings</span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-1 justify-center">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-medium">{listing.rating || 'N/A'}</span>
-                          <span className="text-sm text-muted-foreground">rating</span>
-                        </div>
-                        
-                        <div className="flex space-x-2 pt-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-1"
-                            onClick={() => onNavigate('listing', listing._id)} // Navigate to ListingPage for editing
-                          >
-                            <Edit className="h-4 w-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-1 text-red-600 hover:text-red-700"
-                            onClick={() => handleDeleteListing(listing._id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-
           <TabsContent value="bookings" className="space-y-6">
             <div>
               <h2 className="text-2xl font-bold">Bookings</h2>
@@ -468,76 +386,52 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
             </div>
 
             <div className="space-y-4">
-              {mockBookings.map((booking) => (
-                <Card key={booking.id} className="shadow-lg border-0 hover:shadow-xl transition-all duration-200">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-12 w-12 ring-2 ring-gray-100">
-                          <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
-                            {booking.avatar}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg">{booking.listingTitle}</h3>
-                          <p className="text-muted-foreground">
-                            {booking.type === 'incoming' 
-                              ? `Rented by ${booking.renter}` 
-                              : `Rented from ${booking.owner}`
-                            }
-                          </p>
-                          <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>{booking.startDate} to {booking.endDate}</span>
+              {isLoadingMyBookings ? (
+                <p>Loading your bookings...</p>
+              ) : myBookings.length === 0 ? (
+                <p>You have no bookings yet.</p>
+              ) : (
+                myBookings.map((booking: any) => (
+                  <Card key={booking._id} className="shadow-lg border-0 hover:shadow-xl transition-all duration-200">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Avatar className="h-12 w-12 ring-2 ring-gray-100">
+                            <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
+                              {booking.renter.name ? booking.renter.name.charAt(0) : 'N/A'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-lg">{booking.listing.title}</h3>
+                            <p className="text-muted-foreground">
+                              Rented by {booking.renter.name ? booking.renter.name : 'N/A'}
+                            </p>
+                            <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="h-4 w-4" />
+                                <span>{new Date(booking.startDate).toLocaleDateString()} to {new Date(booking.endDate).toLocaleDateString()}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-green-600">₹{booking.total.toLocaleString()}</p>
-                          <Badge variant={
-                            booking.status === 'confirmed' ? 'default' :
-                            booking.status === 'pending' ? 'secondary' :
-                            booking.status === 'completed' ? 'outline' : 'destructive'
-                          } className="shadow-sm">
-                            {booking.status}
-                          </Badge>
-                        </div>
-
-                        {booking.type === 'incoming' && booking.status === 'pending' && (
-                          <div className="flex space-x-2">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleApproveBooking(booking.id)}
-                              className="bg-green-500 hover:bg-green-600"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => handleDeclineBooking(booking.id)}
-                              className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
-                            >
-                              <XCircle className="h-4 w-4 mr-1" />
-                              Decline
-                            </Button>
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-green-600">₹{booking.totalPrice.toLocaleString()}</p>
+                            <Badge variant={
+                              booking.status === 'confirmed' ? 'default' :
+                                booking.status === 'pending' ? 'secondary' :
+                                  booking.status === 'completed' ? 'outline' : 'destructive'
+                            } className="shadow-sm">
+                              {booking.status}
+                            </Badge>
                           </div>
-                        )}
-
-                        <Button size="sm" variant="outline" className="hover:bg-blue-50 hover:border-blue-200">
-                          <MessageCircle className="h-4 w-4 mr-1" />
-                          Chat
-                        </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -569,7 +463,7 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                     Edit Photo
                   </Button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
@@ -592,7 +486,7 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                     </div> */}
                   </div>
                 </div>
-                
+
                 <div className="pt-4 border-t">
                   <Button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600">
                     <Edit className="h-4 w-4 mr-2" />

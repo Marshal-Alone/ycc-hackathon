@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
@@ -536,17 +537,19 @@ export function HomePage({
                       </div>
                     </div>
 
-                    <Button
-                      size="sm"
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                      disabled={
-                        !!(listing.availability?.endDate && new Date(listing.availability.endDate) < new Date())
-                      }
-                    >
-                      {listing.availability?.endDate && new Date(listing.availability.endDate) > new Date()
-                        ? "Book Now"
-                        : "View Details"}
-                    </Button>
+                    <Link to={`/equipment/${listing._id}`} className="w-full">
+                      <Button
+                        size="sm"
+                        className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                        disabled={
+                          !!(listing.availability?.endDate && new Date(listing.availability.endDate) < new Date())
+                        }
+                      >
+                        {listing.availability?.endDate && new Date(listing.availability.endDate) > new Date()
+                          ? "Book Now"
+                          : "View Details"}
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
