@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Card, CardContent } from '../ui/card';
@@ -21,8 +22,23 @@ import {
   Grid3X3,
   List,
   Heart,
-  Eye
+  Eye,
 } from 'lucide-react';
+
+type Listing = {
+  _id: string;
+  title: string;
+  category: 'machine' | 'tool' | 'land';
+  price: number;
+  priceType: 'per_day' | 'per_hour';
+  location: { district: string; village: string };
+  owner: { name: string };
+  images: { url: string }[];
+  availability: {
+    startDate?: string;
+    endDate?: string;
+  };
+};
 
 type User = {
   id: string;
@@ -33,109 +49,29 @@ type User = {
 
 interface SearchResultsProps {
   user: User;
-  searchQuery: string;
   onNavigate: (page: string) => void;
   onLogout: () => void;
 }
 
-const mockResults = [
-  {
-    id: '1',
-    title: 'John Deere 5310 Tractor',
-    category: 'machines',
-    subcategory: 'Tractor',
-    price: 1500,
-    priceUnit: 'day',
-    location: { district: 'Pune', village: 'Baramati' },
-    rating: 4.8,
-    reviews: 23,
-    owner: 'Suresh Patil',
-    image: 'https://images.unsplash.com/photo-1558618644-fcd25c85cd64?w=400&h=300&fit=crop',
-    availability: 'Available',
-    distance: '5 km away',
-    verified: true,
-    featured: true
-  },
-  {
-    id: '2',
-    title: 'Rotary Tiller - 7ft',
-    category: 'tools',
-    subcategory: 'Rotary Tiller',
-    price: 800,
-    priceUnit: 'day',
-    location: { district: 'Pune', village: 'Shirur' },
-    rating: 4.6,
-    reviews: 15,
-    owner: 'Amit Sharma',
-    image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop',
-    availability: 'Available',
-    distance: '12 km away',
-    verified: true
-  },
-  {
-    id: '3',
-    title: 'Combine Harvester',
-    category: 'machines',
-    subcategory: 'Harvester',
-    price: 3000,
-    priceUnit: 'day',
-    location: { district: 'Pune', village: 'Baramati' },
-    rating: 4.7,
-    reviews: 31,
-    owner: 'Pradeep Singh',
-    image: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=400&h=300&fit=crop',
-    availability: 'Booked',
-    distance: '3 km away',
-    verified: true
-  },
-  {
-    id: '4',
-    title: '5 Acre Farmland',
-    category: 'land',
-    subcategory: 'Crop Land',
-    price: 2000,
-    priceUnit: 'month',
-    location: { district: 'Pune', village: 'Indapur' },
-    rating: 4.9,
-    reviews: 8,
-    owner: 'Rajesh Kale',
-    image: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop',
-    availability: 'Available',
-    distance: '18 km away',
-    verified: false
-  },
-  {
-    id: '5',
-    title: 'Disc Harrow Set',
-    category: 'tools',
-    subcategory: 'Disc Harrow',
-    price: 600,
-    priceUnit: 'day',
-    location: { district: 'Pune', village: 'Baramati' },
-    rating: 4.5,
-    reviews: 12,
-    owner: 'Vikram Joshi',
-    image: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&h=300&fit=crop',
-    availability: 'Available',
-    distance: '7 km away',
-    verified: true
-  }
-];
-
 const categoryIcons = {
-  machines: Tractor,
-  tools: Wrench,
-  land: Leaf
+  machine: Tractor,
+  tool: Wrench,
+  land: Leaf,
 };
 
 const categoryColors = {
-  machines: 'bg-red-50 text-red-700 border-red-200',
-  tools: 'bg-amber-50 text-amber-700 border-amber-200',
-  land: 'bg-green-50 text-green-700 border-green-200'
+  machine: 'bg-red-50 text-red-700 border-red-200',
+  tool: 'bg-amber-50 text-amber-700 border-amber-200',
+  land: 'bg-green-50 text-green-700 border-green-200',
 };
 
-export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsProps) {
-  const [query, setQuery] = useState(searchQuery);
+export function SearchResults({ user, onNavigate }: SearchResultsProps) {
+  const location = useLocation();
+  const [results, setResults] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({
     category: '',
     subcategory: '',
@@ -148,31 +84,70 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Searching for:', query, filters);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q') || '';
+    setQuery(q);
+    fetchResults(q, filters);
+  }, [location.search, filters]);
+
+  const fetchResults = async (searchQuery: string, filters: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery.trim() !== '') {
+        params.append('q', searchQuery);
+      }
+      if (filters.category && filters.category !== '') {
+        params.append('category', filters.category);
+      }
+      if (filters.district && filters.district !== '') {
+        params.append('district', filters.district);
+      }
+      // Assuming village filter might be added later, currently not in frontend state
+      // if (filters.village && filters.village !== '') {
+      //   params.append('village', filters.village);
+      // }
+      if (filters.priceRange[0] > 0) { // Only append if min price is greater than 0
+        params.append('price_min', filters.priceRange[0].toString());
+      }
+      if (filters.priceRange[1] < 5000) { // Only append if max price is less than max possible
+        params.append('price_max', filters.priceRange[1].toString());
+      }
+      if (filters.availability && filters.availability !== 'all') {
+        params.append('availability', filters.availability);
+      }
+
+      console.log("Frontend Search Request Params:", params.toString());
+      const response = await fetch(`/api/listings/search?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch search results');
+      }
+      const data = await response.json();
+      console.log("Frontend Search Results Received:", data);
+      setResults(data);
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Frontend Search Error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredResults = mockResults.filter(item => {
-    if (filters.category && item.category !== filters.category) return false;
-    if (filters.subcategory && item.subcategory !== filters.subcategory) return false;
-    if (item.price < filters.priceRange[0] || item.price > filters.priceRange[1]) return false;
-    if (filters.availability === 'available' && item.availability !== 'Available') return false;
-    if (filters.district && item.location.district !== filters.district) return false;
-    if (filters.verified && !item.verified) return false;
-    return true;
-  });
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchResults(query, filters);
+    // Update URL
+    onNavigate(`search?q=${query}`);
+  };
 
-  const sortedResults = [...filteredResults].sort((a, b) => {
+  const sortedResults = [...results].sort((a, b) => {
     switch (filters.sortBy) {
       case 'price-low':
         return a.price - b.price;
       case 'price-high':
         return b.price - a.price;
-      case 'rating':
-        return b.rating - a.rating;
-      case 'distance':
-        return parseFloat(a.distance) - parseFloat(b.distance);
       default:
         return 0;
     }
@@ -329,16 +304,6 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                   </div>
 
                   {/* Verified Only */}
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="verified"
-                      checked={filters.verified}
-                      onCheckedChange={(checked) => setFilters(prev => ({ ...prev, verified: !!checked }))}
-                    />
-                    <Label htmlFor="verified" className="text-sm font-medium cursor-pointer">
-                      Verified owners only
-                    </Label>
-                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -387,8 +352,6 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                     <SelectItem value="relevance">Sort by Relevance</SelectItem>
                     <SelectItem value="price-low">Price: Low to High</SelectItem>
                     <SelectItem value="price-high">Price: High to Low</SelectItem>
-                    <SelectItem value="rating">Highest Rated</SelectItem>
-                    <SelectItem value="distance">Nearest First</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -400,36 +363,24 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                 {sortedResults.map((item) => {
                   const CategoryIcon = categoryIcons[item.category as keyof typeof categoryIcons];
                   return (
-                    <Card key={item.id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg group">
+                    <Card key={item._id} className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-0 shadow-lg group">
                       <div className="aspect-video bg-muted overflow-hidden relative">
                         <img 
-                          src={item.image} 
+                          src={item.images[0]?.url} 
                           alt={item.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute top-3 left-3 flex space-x-2">
-                          <Badge className={`border-0 shadow-lg ${categoryColors[item.category as keyof typeof categoryColors]}`}>
+                          <Badge className={`border-0 shadow-lg ${categoryColors[item.category]}`}>
                             <CategoryIcon className="h-3 w-3 mr-1" />
                             {item.category}
                           </Badge>
-                          {item.featured && (
-                            <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 shadow-lg">
-                              ⭐ Featured
-                            </Badge>
-                          )}
                         </div>
                         <div className="absolute top-3 right-3">
-                          <Badge variant={item.availability === 'Available' ? 'default' : 'secondary'} className="shadow-lg">
-                            {item.availability}
+                          <Badge variant={item.availability?.startDate ? 'default' : 'secondary'} className="shadow-lg">
+                            {item.availability?.startDate ? 'Available' : 'Booked'}
                           </Badge>
                         </div>
-                        {item.verified && (
-                          <div className="absolute bottom-3 right-3">
-                            <Badge variant="outline" className="bg-white/90 backdrop-blur-sm text-green-600 border-green-200">
-                              ✓ Verified
-                            </Badge>
-                          </div>
-                        )}
                         <div className="absolute bottom-3 left-3 flex space-x-2">
                           <Button size="sm" variant="outline" className="bg-white/90 backdrop-blur-sm h-8 w-8 p-0">
                             <Heart className="h-4 w-4" />
@@ -446,25 +397,18 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                             <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
                               <MapPin className="h-3 w-3" />
                               <span>{item.location.village}, {item.location.district}</span>
-                              <span>•</span>
-                              <span>{item.distance}</span>
                             </div>
                           </div>
                           
                           <div className="flex items-center justify-between">
                             <div>
                               <span className="text-2xl font-bold text-green-600">₹{item.price}</span>
-                              <span className="text-sm text-muted-foreground">/{item.priceUnit}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="font-medium">{item.rating}</span>
-                              <span className="text-sm text-muted-foreground">({item.reviews})</span>
+                              <span className="text-sm text-muted-foreground">/{item.priceType.replace('_', ' ')}</span>
                             </div>
                           </div>
                           
                           <div className="flex items-center justify-between pt-2 border-t">
-                            <span className="text-sm text-muted-foreground">by {item.owner}</span>
+                            <span className="text-sm text-muted-foreground">by {item.owner.name}</span>
                             <div className="flex space-x-2">
                               <Button size="sm" variant="outline" className="hover:bg-blue-50">
                                 <Calendar className="h-4 w-4" />
@@ -472,9 +416,9 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                               <Button 
                                 size="sm" 
                                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                                disabled={item.availability !== 'Available'}
+                                disabled={!item.availability?.startDate}
                               >
-                                {item.availability === 'Available' ? 'Book' : 'View'}
+                                {item.availability?.startDate ? 'Book' : 'View'}
                               </Button>
                             </div>
                           </div>
@@ -487,22 +431,17 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
             ) : (
               <div className="space-y-4">
                 {sortedResults.map((item) => {
-                  const CategoryIcon = categoryIcons[item.category as keyof typeof categoryIcons];
+                  const CategoryIcon = categoryIcons[item.category];
                   return (
-                    <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-all duration-200 border-0 shadow-md">
+                    <Card key={item._id} className="overflow-hidden hover:shadow-lg transition-all duration-200 border-0 shadow-md">
                       <CardContent className="p-6">
                         <div className="flex space-x-6">
                           <div className="w-48 h-32 bg-muted overflow-hidden rounded-lg flex-shrink-0 relative">
                             <img 
-                              src={item.image} 
+                              src={item.images[0]?.url} 
                               alt={item.title}
                               className="w-full h-full object-cover"
                             />
-                            {item.featured && (
-                              <Badge className="absolute top-2 left-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 text-xs">
-                                ⭐ Featured
-                              </Badge>
-                            )}
                           </div>
                           
                           <div className="flex-1 space-y-3">
@@ -510,18 +449,16 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                               <div>
                                 <h3 className="text-xl font-semibold">{item.title}</h3>
                                 <div className="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
-                                  <Badge className={`${categoryColors[item.category as keyof typeof categoryColors]} text-xs`}>
+                                  <Badge className={`${categoryColors[item.category]} text-xs`}>
                                     <CategoryIcon className="h-3 w-3 mr-1" />
                                     {item.category}
                                   </Badge>
                                   <MapPin className="h-3 w-3" />
                                   <span>{item.location.village}, {item.location.district}</span>
-                                  <span>•</span>
-                                  <span>{item.distance}</span>
                                 </div>
                               </div>
-                              <Badge variant={item.availability === 'Available' ? 'default' : 'secondary'}>
-                                {item.availability}
+                              <Badge variant={item.availability?.startDate ? 'default' : 'secondary'}>
+                                {item.availability?.startDate ? 'Available' : 'Booked'}
                               </Badge>
                             </div>
                             
@@ -529,22 +466,12 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                               <div className="flex items-center space-x-4">
                                 <div>
                                   <span className="text-2xl font-bold text-green-600">₹{item.price}</span>
-                                  <span className="text-sm text-muted-foreground">/{item.priceUnit}</span>
+                                  <span className="text-sm text-muted-foreground">/{item.priceType.replace('_', ' ')}</span>
                                 </div>
-                                <div className="flex items-center space-x-1">
-                                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                  <span className="font-medium">{item.rating}</span>
-                                  <span className="text-sm text-muted-foreground">({item.reviews} reviews)</span>
-                                </div>
-                                {item.verified && (
-                                  <Badge variant="outline" className="text-green-600 border-green-200">
-                                    ✓ Verified
-                                  </Badge>
-                                )}
                               </div>
                               
                               <div className="flex items-center space-x-3">
-                                <span className="text-sm text-muted-foreground">by {item.owner}</span>
+                                <span className="text-sm text-muted-foreground">by {item.owner.name}</span>
                                 <div className="flex space-x-2">
                                   <Button size="sm" variant="outline">
                                     <Heart className="h-4 w-4" />
@@ -555,9 +482,9 @@ export function SearchResults({ user, searchQuery, onNavigate }: SearchResultsPr
                                   <Button 
                                     size="sm" 
                                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                                    disabled={item.availability !== 'Available'}
+                                    disabled={!item.availability?.startDate}
                                   >
-                                    {item.availability === 'Available' ? 'Book Now' : 'View Details'}
+                                    {item.availability?.startDate ? 'Book Now' : 'View Details'}
                                   </Button>
                                 </div>
                               </div>

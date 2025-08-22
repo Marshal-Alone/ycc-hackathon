@@ -22,7 +22,8 @@ import {
   Package,
   Eye,
   Heart,
-  BarChart3
+  BarChart3,
+  ShoppingCart // Import ShoppingCart icon
 } from 'lucide-react';
 import api from '../../api'; // Import API instance
 import { toast } from 'sonner'; // Import toast for notifications
@@ -184,16 +185,29 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
     }
   };
 
-  const stats = {
-    totalListings: myListings.length, // Use dynamic data
-    activeBookings: myBookings.filter(b => b.status === 'confirmed').length,
-    totalEarnings: myBookings
-      .filter(b => b.status === 'completed')
-      .reduce((sum, b) => sum + b.totalPrice, 0),
-    avgRating: 4.7, // This would ideally be dynamic
-    totalViews: myListings.reduce((sum, listing) => sum + (listing.views || 0), 0), // Use dynamic data, with fallback
-    pendingRequests: myBookings.filter(b => b.status === 'pending').length
-  };
+const stats = {
+  totalListings: myListings.length, // dynamic
+
+  // Active bookings (from both branches, same calculation)
+  activeBookings: myBookings.filter(b => b.status === 'confirmed').length,
+
+  // Total earnings (pick correct field)
+  totalEarnings: myBookings
+    .filter(b => b.status === 'completed')
+    .reduce((sum, b) => sum + (b.totalPrice || b.total), 0),
+
+  // Total rented items / total expense (from dashboard branch)
+  totalRentedItems: myBookings.filter(b => b.status === 'completed' && b.type === 'outgoing').length,
+  totalExpense: myBookings
+    .filter(b => b.type === 'outgoing' && b.status === 'completed')
+    .reduce((sum, b) => sum + (b.total || b.totalPrice), 0),
+
+  // Extra stats from main branch
+  avgRating: 4.7, // ideally dynamic
+  totalViews: myListings.reduce((sum, listing) => sum + (listing.views || 0), 0),
+  pendingRequests: myBookings.filter(b => b.status === 'pending').length
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
@@ -267,19 +281,36 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                   <DollarSign className="h-5 w-5 text-emerald-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-emerald-900">₹{myBookings
-                    .filter(b => b.status === 'completed')
-                    .reduce((sum, b) => sum + b.totalPrice, 0).toLocaleString()}</div>
+                  <div className="text-3xl font-bold text-emerald-900">₹{stats.totalEarnings.toLocaleString()}</div>
+                  <p className="text-xs text-emerald-600 mt-1">
+                    +15% from last month
+                  </p>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-indigo-50 to-indigo-100 hover:shadow-xl transition-all duration-200">
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-orange-100 hover:shadow-xl transition-all duration-200">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-semibold text-indigo-700">Pending Requests</CardTitle>
-                  <Clock className="h-5 w-5 text-indigo-600" />
+                  <CardTitle className="text-sm font-semibold text-orange-700">Total Rented Items</CardTitle>
+                  <ShoppingCart className="h-5 w-5 text-orange-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-indigo-900">{myBookings.filter(b => b.status === 'pending').length}</div>
+                  <div className="text-3xl font-bold text-orange-900">{stats.totalRentedItems}</div>
+                  <p className="text-xs text-orange-600 mt-1">
+                    Items you have rented out
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-lg bg-gradient-to-br from-red-50 to-red-100 hover:shadow-xl transition-all duration-200">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-semibold text-red-700">Total Expense</CardTitle>
+                  <DollarSign className="h-5 w-5 text-red-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-red-900">₹{stats.totalExpense.toLocaleString()}</div>
+                  <p className="text-xs text-red-600 mt-1">
+                    Total spent on rentals
+                  </p>
                 </CardContent>
               </Card>
             </div>

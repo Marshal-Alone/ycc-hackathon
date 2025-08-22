@@ -22,32 +22,58 @@ exports.getMyListings = async (req, res) => {
 };
 
 exports.searchListings = async (req, res) => {
-  const { category, district, village, startDate, endDate } = req.query;
+  const { q, category, district, village, price_min, price_max, availability } = req.query;
 
   try {
-    let query = {};
+    let query = { isApproved: true }; // Only show approved listings by default
 
-    if (category) {
+    if (q && q.trim() !== '') {
+      query.$or = [
+        { title: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+      ];
+    }
+
+    if (category && category !== '') {
       query.category = category;
     }
 
-    if (district) {
+    if (district && district !== '') {
       query['location.district'] = district;
     }
 
-    if (village) {
+    if (village && village !== '') {
       query['location.village'] = village;
     }
 
-    if (startDate && endDate) {
-      query['availability.startDate'] = { $lte: new Date(endDate) };
-      query['availability.endDate'] = { $gte: new Date(startDate) };
+    if (price_min || price_max) {
+      query.price = {};
+      if (price_min && !isNaN(parseFloat(price_min))) {
+        query.price.$gte = parseFloat(price_min);
+      }
+      if (price_max && !isNaN(parseFloat(price_max))) {
+        query.price.$lte = parseFloat(price_max);
+      }
+      if (Object.keys(query.price).length === 0) {
+        delete query.price; // Remove price filter if no valid min/max were provided
+      }
     }
 
+    if (availability === 'available') {
+      const now = new Date();
+      // Ensure both startDate and endDate exist and are valid dates for comparison
+      query.$and = [
+        { 'availability.startDate': { $ne: null, $lte: now } },
+        { 'availability.endDate': { $ne: null, $gte: now } }
+      ];
+    }
+
+    console.log("Constructed Search Query:", JSON.stringify(query));
     const listings = await Listing.find(query).populate('owner', ['name']);
+    console.log("Found listings count:", listings.length);
     res.json(listings);
   } catch (err) {
-    console.error(err.message);
+    console.error("Search Listings Error:", err.message);
     res.status(500).send('Server error');
   }
 };
