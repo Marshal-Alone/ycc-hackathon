@@ -42,7 +42,7 @@ type Listing = {
   category: string;
   price: number;
   priceType: string;
-  images: string[];
+  images: { url: string; publicId: string; }[];
   location: {
     district: string;
     village: string;
@@ -388,8 +388,8 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
                 myListings.map((listing) => (
                   <Card key={listing._id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-lg">
                     <div className="aspect-video bg-muted overflow-hidden relative">
-                      <img 
-                        src={listing.images[0] || 'https://via.placeholder.com/100'} // Use first image or placeholder
+                      <img
+                        src={listing.images[0]?.url || 'https://via.placeholder.com/100'} // Use first image or placeholder
                         alt={listing.title}
                         className="w-full h-full object-cover"
                       />
