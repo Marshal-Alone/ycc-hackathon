@@ -6,6 +6,7 @@ import { RegisterPage } from './components/auth/RegisterPage';
 import { HomePage } from './components/home/HomePage';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { ListingPage } from './components/listings/ListingPage';
+import EquipmentDetailsPage from './components/listings/EquipmentDetailsPage';
 import { SearchResults } from './components/search/SearchResults';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { ChatPage } from './components/chat/ChatPage';
@@ -112,6 +113,7 @@ function AppContent() {
           <Route path="/dashboard" element={<Dashboard user={user} onNavigate={navigateTo} onLogout={handleLogout} refreshTrigger={refreshListings} />} />
           <Route path="/listing" element={<ListingPage user={user} onNavigate={navigateTo} onLogout={handleLogout} onListingCreated={handleListingCreated} />} />
           <Route path="/listing/:listingId" element={<ListingPage user={user} onNavigate={navigateTo} onLogout={handleLogout} onListingCreated={handleListingCreated} />} />
+          <Route path="/equipment/:id" element={<EquipmentDetailsPage />} />
           <Route path="/search" element={<SearchResults user={user} searchQuery={searchQuery} onNavigate={navigateTo} onLogout={handleLogout} />} />
           <Route path="/chat" element={<ChatPage user={user} onNavigate={navigateTo} onLogout={handleLogout} />} />
           <Route path="/profile" element={<ProfilePage user={user} onLogout={handleLogout} />} />
