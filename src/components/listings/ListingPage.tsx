@@ -570,7 +570,7 @@ export function ListingPage({ user, onNavigate, onListingCreated, listingId }: L
               {userListings.map((listing) => (
                 <Card key={listing._id} className="flex items-center p-4">
                   <img
-                    src={listing.images[0]?.url || 'https://via.placeholder.com/100'}
+                    src={listing.images[0]?.url || 'https://placehold.co/100x100'}
                     alt={listing.title}
                     className="w-24 h-24 object-cover rounded-md mr-4"
                   />
