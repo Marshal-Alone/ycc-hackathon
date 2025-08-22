@@ -4,6 +4,11 @@ const router = express.Router();
 const auth = require('../../middleware/auth');
 const listingController = require('../../controllers/listings');
 
+// @route   POST api/listings/upload
+// @desc    Upload listing images
+// @access  Private
+router.post('/upload', auth, listingController.uploadListingImages);
+
 // @route   POST api/listings
 // @desc    Create a listing
 // @access  Private

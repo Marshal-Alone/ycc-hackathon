@@ -178,15 +178,31 @@ export function ListingPage({ user, onNavigate, onListingCreated, listingId }: L
     }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    const newImages = files.map((file, index) => 
-      `https://images.unsplash.com/photo-1558618644-fcd25c85cd64?w=400&h=300&fit=crop&id=${Date.now()}-${index}`
-    );
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...newImages].slice(0, 5)
-    }));
+    if (files.length === 0) return;
+
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('images', file);
+    });
+
+    try {
+      const res = await api.post('/listings/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const { imageUrls } = res.data;
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...imageUrls].slice(0, 5) // Limit to 5 images
+      }));
+      toast.success('Image(s) uploaded successfully!');
+    } catch (err: any) {
+      console.error('Error uploading images:', err.response?.data || err.message);
+      toast.error(err.response?.data?.msg || 'Failed to upload images. Please try again.');
+    }
   };
 
   const removeImage = (index: number) => {

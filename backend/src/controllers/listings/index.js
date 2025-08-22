@@ -1,4 +1,30 @@
 const Listing = require('../../models/Listing');
+const multer = require('multer');
+
+// Set up multer for file storage
+const storage = multer.memoryStorage(); // Store files in memory as buffers
+const upload = multer({ storage: storage });
+
+exports.uploadListingImages = upload.array('images', 5), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ msg: 'No image files uploaded' });
+    }
+
+    // In a real application, you would upload these files to a cloud storage service
+    // like Cloudinary, AWS S3, or Google Cloud Storage.
+    // For this example, we'll simulate returning URLs.
+    const imageUrls = req.files.map((file, index) => {
+      // Simulate a unique URL for each uploaded image
+      return `https://example.com/uploads/${Date.now()}-${index}-${file.originalname}`;
+    });
+
+    res.json({ imageUrls });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+};
 
 exports.createListing = async (req, res) => {
   const {
