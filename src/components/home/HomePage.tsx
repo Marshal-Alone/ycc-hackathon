@@ -366,7 +366,7 @@ export function HomePage({
                   <div className="relative">
                     <div className="aspect-video overflow-hidden">
                       <img
-                        src={listing.images[0]}
+                        src={listing.images?.[0] || 'https://via.placeholder.com/400x225'}
                         alt={listing.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
@@ -472,7 +472,7 @@ export function HomePage({
               >
                 <div className="aspect-video bg-muted overflow-hidden relative">
                   <img
-                    src={listing.images[0]}
+                    src={listing.images?.[0] || 'https://via.placeholder.com/400x225'}
                     alt={listing.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                   />
