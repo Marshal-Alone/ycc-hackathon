@@ -29,6 +29,11 @@ type User = {
   name: string;
   email: string;
   role: 'owner' | 'renter' | 'admin';
+  status: 'active' | 'pending' | 'suspended';
+  joinDate: string;
+  totalListings: number;
+  totalBookings: number;
+  location: string;
 };
 
 type RecentUser = {
@@ -39,10 +44,35 @@ type RecentUser = {
   createdAt: string;
 };
 
+type Listing = {
+  id: string;
+  title: string;
+  owner: string;
+  category: string;
+  price: number;
+  status: 'active' | 'pending' | 'rejected';
+  dateAdded: string;
+  bookings: number;
+  rating: number;
+  flagged: boolean;
+};
+
+type Booking = {
+  id: string;
+  listing: string;
+  renter: string;
+  owner: string;
+  startDate: string;
+  endDate: string;
+  status: 'confirmed' | 'disputed' | 'pending' | 'cancelled';
+  amount: number;
+  commission: number;
+};
+
 interface AdminDashboardProps {
   user: User;
   onNavigate: (page: string) => void;
-  handleLogout: () => void; // Renamed from onLogout to handleLogout as per the prompt
+  handleLogout: () => void;
 }
 
 type Stats = {
@@ -52,89 +82,92 @@ type Stats = {
   totalRevenue: number;
 };
 
-const mockUsers = [
-  // {
-  //   id: '1',
-  //   name: 'Ramesh Kumar',
-  //   email: 'ramesh@email.com',
-  //   status: 'active',
-  //   joinDate: '2024-01-15',
-  //   totalListings: 3,
-  //   totalBookings: 8,
-  //   location: 'Pune, Maharashtra'
-  // },
-  // {
-  //   id: '2',
-  //   name: 'Suresh Patil',
-  //   email: 'suresh@email.com',
-  //   status: 'active',
-  //   joinDate: '2024-01-10',
-  //   totalListings: 5,
-  //   totalBookings: 15,
-  //   location: 'Pune, Maharashtra'
-  // },
-  // {
-  //   id: '3',
-  //   name: 'Amit Sharma',
-  //   email: 'amit@email.com',
-  //   status: 'pending',
-  //   joinDate: '2024-01-20',
-  //   totalListings: 2,
-  //   totalBookings: 3,
-  //   location: 'Mumbai, Maharashtra'
-  // }
+const mockUsers: User[] = [
+  {
+    id: '1',
+    name: 'Ramesh Kumar',
+    email: 'ramesh@email.com',
+    role: 'renter',
+    status: 'active',
+    joinDate: '2024-01-15',
+    totalListings: 3,
+    totalBookings: 8,
+    location: 'Pune, Maharashtra'
+  },
+  {
+    id: '2',
+    name: 'Suresh Patil',
+    email: 'suresh@email.com',
+    role: 'owner',
+    status: 'active',
+    joinDate: '2024-01-10',
+    totalListings: 5,
+    totalBookings: 15,
+    location: 'Pune, Maharashtra'
+  },
+  {
+    id: '3',
+    name: 'Amit Sharma',
+    email: 'amit@email.com',
+    role: 'renter',
+    status: 'pending',
+    joinDate: '2024-01-20',
+    totalListings: 2,
+    totalBookings: 3,
+    location: 'Mumbai, Maharashtra'
+  }
 ];
 
-const mockListings = [
-  // {
-  //   id: '1',
-  //   title: 'John Deere 5310 Tractor',
-  //   owner: 'Suresh Patil',
-  //   category: 'machines',
-  //   price: 1500,
-  //   status: 'active',
-  //   dateAdded: '2024-01-18',
-  //   bookings: 5,
-  //   rating: 4.8,
-  //   flagged: false
-  // },
-  // {
-  //   id: '2',
-  //   title: 'Suspicious Cheap Harvester',
-  //   owner: 'Unknown User',
-  //   category: 'machines',
-  //   price: 100,
-  //   status: 'pending',
-  //   dateAdded: '2024-01-22',
-  //   bookings: 0,
-  //   rating: 0,
-  //   flagged: true
-  // }
+const mockListings: Listing[] = [
+  {
+    id: '1',
+    title: 'John Deere 5310 Tractor',
+    owner: 'Suresh Patil',
+    category: 'machines',
+    price: 1500,
+    status: 'active',
+    dateAdded: '2024-01-18',
+    bookings: 5,
+    rating: 4.8,
+    flagged: false
+  },
+  {
+    id: '2',
+    title: 'Suspicious Cheap Harvester',
+    owner: 'Unknown User',
+    category: 'machines',
+    price: 100,
+    status: 'pending',
+    dateAdded: '2024-01-22',
+    bookings: 0,
+    rating: 0,
+    flagged: true
+  }
 ];
 
-const mockBookings = [
-  // {
-  //   id: '1',
-  //   listing: 'John Deere 5310 Tractor',
-  //   renter: 'Ramesh Kumar',
-  //   owner: 'Suresh Patil',
-  //   startDate: '2024-01-25',
-  //   endDate: '2024-01-27',
-  //   status: 'confirmed',
-  //   amount: 4500,
-  //   commission: 450
-  // },
-  // {
-  //   id: '2',
-  //   listing: 'Rotary Tiller Set',
-  //   renter: 'Raj Patel',
-  //   owner: 'Amit Sharma',
-  //   startDate: '2024-01-28',
-  //   endDate: '2024-01-30',
-  //   status: 'disputed',
-  //   amount: 2400,
-  //   commission: 240
-  // }
+const mockBookings: Booking[] = [
+  {
+    id: '1',
+    listing: 'John Deere 5310 Tractor',
+    renter: 'Ramesh Kumar',
+    owner: 'Suresh Patil',
+    startDate: '2024-01-25',
+    endDate: '2024-01-27',
+    status: 'confirmed',
+    amount: 4500,
+    commission: 450
+  },
+  {
+    id: '2',
+    listing: 'Rotary Tiller Set',
+    renter: 'Raj Patel',
+    owner: 'Amit Sharma',
+    startDate: '2024-01-28',
+    endDate: '2024-01-30',
+    status: 'disputed',
+    amount: 2400,
+    commission: 240
+  }
 ];
 
 export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboardProps) {
@@ -144,6 +177,10 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [listings, setListings] = useState<Listing[]>(mockListings);
+  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
 
   useEffect(() => {
     const fetchRecentUsers = async () => {
@@ -387,7 +424,7 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {mockListings.filter(listing => listing.flagged).map((listing) => (
+                      {listings.filter(listing => listing.flagged).map((listing) => (
                         <div key={listing.id} className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <AlertTriangle className="h-5 w-5 text-yellow-500" />
@@ -435,7 +472,7 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockUsers.map((user) => (
+                    {users.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
@@ -512,7 +549,7 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockListings.map((listing) => (
+                    {listings.map((listing) => (
                       <TableRow key={listing.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
@@ -600,7 +637,7 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockBookings.map((booking) => (
+                    {bookings.map((booking) => (
                       <TableRow key={booking.id}>
                         <TableCell>{booking.listing}</TableCell>
                         <TableCell>{booking.renter}</TableCell>
