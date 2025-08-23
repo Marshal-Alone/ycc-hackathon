@@ -35,6 +35,28 @@ type User = {
   role: 'owner' | 'renter' | 'admin';
 };
 
+// Define Booking type for frontend
+type Booking = {
+  _id: string;
+  listing: {
+    _id: string;
+    title: string;
+  };
+  renter: {
+    _id: string;
+    name: string;
+  };
+  owner: {
+    _id: string;
+    name: string;
+  };
+  startDate: string;
+  endDate: string;
+  totalPrice: number;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  // Add other fields if needed for display or logic
+};
+
 // Define Listing type for frontend (consistent with ListingPage.tsx)
 type Listing = {
   _id: string;
@@ -71,42 +93,6 @@ interface DashboardProps {
   refreshTrigger: number; // New prop to trigger listing refresh
 }
 
-const mockBookings = [
-  {
-    id: '1',
-    listingTitle: 'Combine Harvester',
-    owner: 'Pradeep Singh',
-    startDate: '2024-01-25',
-    endDate: '2024-01-27',
-    status: 'confirmed',
-    total: 9000,
-    type: 'outgoing',
-    avatar: 'PS'
-  },
-  {
-    id: '2',
-    listingTitle: 'John Deere 5310 Tractor',
-    renter: 'Raj Patel',
-    startDate: '2024-01-28',
-    endDate: '2024-01-30',
-    status: 'pending',
-    total: 4500,
-    type: 'incoming',
-    avatar: 'RP'
-  },
-  {
-    id: '3',
-    listingTitle: 'Rotary Tiller Set',
-    renter: 'Mukesh Gupta',
-    startDate: '2024-01-22',
-    endDate: '2024-01-23',
-    status: 'completed',
-    total: 1600,
-    type: 'incoming',
-    avatar: 'MG'
-  }
-];
-
 const recentActivities = [
   { type: 'booking_request', message: 'New booking request for John Deere Tractor', time: '2 hours ago' },
   { type: 'review', message: 'Received 5-star review from Raj Patel', time: '1 day ago' },
@@ -118,7 +104,7 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
   const [activeTab, setActiveTab] = useState('overview');
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [isLoadingMyListings, setIsLoadingMyListings] = useState(true);
-  const [myBookings, setMyBookings] = useState([]);
+  const [myBookings, setMyBookings] = useState<Booking[]>([]); // Apply the new Booking type
   const [isLoadingMyBookings, setIsLoadingMyBookings] = useState(true);
 
   useEffect(() => {
@@ -158,12 +144,30 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
     fetchMyBookings();
   }, [user, refreshTrigger]); // Re-fetch when user changes or refreshTrigger is updated
 
-  const handleApproveBooking = (bookingId: string) => {
-    console.log('Approving booking:', bookingId);
+  const handleApproveBooking = async (bookingId: string) => {
+    try {
+      await api.put(`/bookings/${bookingId}/approve`);
+      toast.success('Booking approved successfully!');
+      // Re-fetch bookings to update the UI
+      const { data } = await api.get('/bookings/owner');
+      setMyBookings(data);
+    } catch (error: any) {
+      console.error('Error approving booking:', error.response?.data || error.message);
+      toast.error(error.response?.data?.msg || 'Failed to approve booking.');
+    }
   };
 
-  const handleDeclineBooking = (bookingId: string) => {
-    console.log('Declining booking:', bookingId);
+  const handleDeclineBooking = async (bookingId: string) => {
+    try {
+      await api.put(`/bookings/${bookingId}/decline`);
+      toast.success('Booking declined successfully!');
+      // Re-fetch bookings to update the UI
+      const { data } = await api.get('/bookings/owner');
+      setMyBookings(data);
+    } catch (error: any) {
+      console.error('Error declining booking:', error.response?.data || error.message);
+      toast.error(error.response?.data?.msg || 'Failed to decline booking.');
+    }
   };
 
   const handleDeleteListing = async (listingId: string) => {
@@ -188,19 +192,17 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
 const stats = {
   totalListings: myListings.length, // dynamic
 
-  // Active bookings (from both branches, same calculation)
+  // Active bookings (only incoming bookings for now, as per /bookings/owner endpoint)
   activeBookings: myBookings.filter(b => b.status === 'confirmed').length,
 
-  // Total earnings (pick correct field)
+  // Total earnings (from completed incoming bookings)
   totalEarnings: myBookings
     .filter(b => b.status === 'completed')
-    .reduce((sum, b) => sum + (b.totalPrice || b.total), 0),
+    .reduce((sum, b) => sum + b.totalPrice, 0),
 
-  // Total rented items / total expense (from dashboard branch)
-  totalRentedItems: myBookings.filter(b => b.status === 'completed' && b.type === 'outgoing').length,
-  totalExpense: myBookings
-    .filter(b => b.type === 'outgoing' && b.status === 'completed')
-    .reduce((sum, b) => sum + (b.total || b.totalPrice), 0),
+  // Total rented items (outgoing bookings - not fetched yet, so 0)
+  totalRentedItems: 0,
+  totalExpense: 0,
 
   // Extra stats from main branch
   avgRating: 4.7, // ideally dynamic
@@ -509,13 +511,13 @@ const stats = {
                         <div className="flex items-center space-x-4">
                           <Avatar className="h-12 w-12 ring-2 ring-gray-100">
                             <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-500 text-white font-semibold">
-                              {booking.renter.name ? booking.renter.name.charAt(0) : 'N/A'}
+                              {booking.renter?.name ? booking.renter.name.charAt(0) : 'U'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{booking.listing?.title || 'N/A'}</h3>
+                            <h3 className="font-semibold text-lg">{booking.listing?.title}</h3>
                             <p className="text-muted-foreground">
-                              Rented by {booking.renter?.name || 'N/A'}
+                              Rented by {booking.renter?.name }
                             </p>
                             <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
                               <div className="flex items-center space-x-1">
@@ -536,6 +538,26 @@ const stats = {
                             } className="shadow-sm">
                               {booking.status}
                             </Badge>
+                            {booking.status === 'pending' && (
+                              <div className="flex space-x-2 mt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 border-green-200 hover:bg-green-50"
+                                  onClick={() => handleApproveBooking(booking._id)}
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" /> Approve
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-600 border-red-200 hover:bg-red-50"
+                                  onClick={() => handleDeclineBooking(booking._id)}
+                                >
+                                  <XCircle className="h-4 w-4 mr-1" /> Decline
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

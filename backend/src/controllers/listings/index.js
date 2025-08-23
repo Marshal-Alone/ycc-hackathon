@@ -25,7 +25,8 @@ exports.searchListings = async (req, res) => {
   const { q, category, district, village, price_min, price_max, availability } = req.query;
 
   try {
-    let query = { isApproved: true }; // Only show approved listings by default
+    let query = {}; // Only show approved listings by default
+    // query = { isApproved: true }; // Temporarily removed for debugging
 
     if (q && q.trim() !== '') {
       query.$or = [

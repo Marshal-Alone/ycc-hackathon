@@ -24,6 +24,7 @@ import {
   Heart,
   Eye,
 } from 'lucide-react';
+import API from '../../api';
 
 type Listing = {
   _id: string;
@@ -120,14 +121,18 @@ export function SearchResults({ user, onNavigate }: SearchResultsProps) {
       }
 
       console.log("Frontend Search Request Params:", params.toString());
-      const response = await fetch(`/api/listings/search?${params.toString()}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch search results');
-      }
-      const data = await response.json();
-      console.log("Frontend Search Results Received:", data);
-      setResults(data);
+      const response = await API.get(`/listings/search?${params.toString()}`);
+      console.log("Frontend Search Results Received:", response.data);
+      setResults(response.data);
     } catch (err: any) {
+      // Axios errors have a different structure
+      if (err.response) {
+        setError(err.response.data.message || 'Failed to fetch search results');
+      } else if (err.request) {
+        setError('No response received from server');
+      } else {
+        setError(err.message);
+      }
       setError(err.message);
       console.error("Frontend Search Error:", err);
     } finally {

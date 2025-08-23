@@ -83,22 +83,16 @@ type Listing = {
 
 import API from '../../api';
 
-interface CategoryCount {
-  machines: number;
-  tools: number;
-  land: number;
-}
-
 const initialCategories = [
   {
-    id: "machines",
+    id: "machine",
     name: "Machines",
     icon: Tractor,
     color: "bg-red-50 text-red-600 border-red-200",
     description: "Tractors, harvesters, and heavy equipment",
   },
   {
-    id: "tools",
+    id: "tool",
     name: "Tools",
     icon: Wrench,
     color: "bg-amber-50 text-amber-600 border-amber-200",
@@ -133,28 +127,18 @@ export function HomePage({
 }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [listings, setListings] = useState<Listing[]>([]);
-  const [categoryCounts, setCategoryCounts] = useState<CategoryCount>({ machines: 0, tools: 0, land: 0 });
 
   useEffect(() => {
-    const fetchListingsAndCategoryCounts = async () => {
+    const fetchListings = async () => {
       try {
         const { data: listingsData } = await API.get('/listings');
         setListings(listingsData);
-
-        // Calculate category counts from fetched listings
-        const counts: CategoryCount = {
-          machines: listingsData.filter(listing => listing.category === 'machines').length,
-          tools: listingsData.filter(listing => listing.category === 'tools').length,
-          land: listingsData.filter(listing => listing.category === 'land').length,
-        };
-        setCategoryCounts(counts);
-
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching listings:", error);
       }
     };
-    fetchListingsAndCategoryCounts();
-  }, [refreshTrigger]); // Add refreshTrigger to dependency array
+    fetchListings();
+  }, [refreshTrigger]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,14 +164,14 @@ export function HomePage({
           </div>
 
           <div className="flex items-center space-x-4">
-            <Button
+            {/* <Button
               variant="outline"
               onClick={() => onNavigate("chat")}
               className="flex items-center space-x-2 hover:bg-green-50 hover:border-green-200 transition-colors"
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="hidden md:inline">Messages</span>
-            </Button>
+              { <span className="hidden md:inline">Messages</span> }
+            </Button> */}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -342,14 +326,6 @@ export function HomePage({
                       <p className="text-muted-foreground text-sm mb-3">
                         {category.description}
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-bold text-green-600">
-                          {categoryCounts[category.id as keyof CategoryCount]}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          listings
-                        </span>
-                      </div>
                     </div>
                   </div>
                 </CardContent>
