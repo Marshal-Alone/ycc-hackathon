@@ -142,12 +142,11 @@ export function HomePage({
         setListings(listingsData);
 
         // Calculate category counts from fetched listings
-        const counts: CategoryCount = { machines: 0, tools: 0, land: 0 };
-        listingsData.forEach((listing: Listing) => {
-          if (listing.category === 'machines') counts.machines++;
-          else if (listing.category === 'tools') counts.tools++;
-          else if (listing.category === 'land') counts.land++;
-        });
+        const counts: CategoryCount = {
+          machines: listingsData.filter(listing => listing.category === 'machines').length,
+          tools: listingsData.filter(listing => listing.category === 'tools').length,
+          land: listingsData.filter(listing => listing.category === 'land').length,
+        };
         setCategoryCounts(counts);
 
       } catch (error) {
