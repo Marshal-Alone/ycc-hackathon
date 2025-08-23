@@ -378,6 +378,117 @@ const stats = {
               </Card>
             </div>
           </TabsContent>
+          <TabsContent value="listings" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">My Listings</h2>
+                <p className="text-muted-foreground">
+                  Manage, edit, or delete your equipment listings.
+                </p>
+              </div>
+              <Button
+                onClick={() => onNavigate('listing')}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Listing
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isLoadingMyListings ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <Card key={index} className="shadow-lg border-0">
+                    <CardContent className="p-4">
+                      <div className="animate-pulse flex space-x-4">
+                        <div className="rounded-lg bg-gray-200 h-24 w-24"></div>
+                        <div className="flex-1 space-y-4 py-1">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="space-y-2">
+                            <div className="h-4 bg-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : myListings.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <Package className="h-12 w-12 mx-auto text-gray-400" />
+                  <h3 className="mt-4 text-lg font-semibold">No listings yet</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Click "Add New Listing" to get started.
+                  </p>
+                </div>
+              ) : (
+                myListings.map((listing) => (
+                  <Card key={listing._id} className="shadow-lg border-0 group overflow-hidden">
+                    <CardHeader className="p-0">
+                      <div className="aspect-w-16 aspect-h-9 overflow-hidden">
+                        <img
+                          src={listing.images[0]?.url || 'https://placehold.co/600x400/green/white?text=Farmland'}
+                          alt={listing.title}
+                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <CardTitle className="text-lg font-semibold leading-tight">
+                          {listing.title}
+                        </CardTitle>
+                        <Badge
+                          variant={listing.isApproved ? 'default' : 'secondary'}
+                          className={`ml-2 ${listing.isApproved ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
+                        >
+                          {listing.isApproved ? 'Approved' : 'Pending'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4" />
+                        <span>{listing.location.village}, {listing.location.district}</span>
+                      </div>
+                      <div className="text-xl font-bold text-green-600">
+                        ₹{listing.price.toLocaleString()}
+                        <span className="text-sm font-normal text-muted-foreground"> / {listing.priceType}</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-3 border-t">
+                        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                          <div className="flex items-center space-x-1">
+                            <Eye className="h-4 w-4" />
+                            <span>{listing.views || 0}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <Heart className="h-4 w-4" />
+                            <span>{listing.likes || 0}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onNavigate('listing', listing._id)}
+                            className="hover:bg-blue-50 hover:border-blue-200"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteListing(listing._id)}
+                            className="hover:bg-red-50 hover:border-red-200"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
 
           <TabsContent value="bookings" className="space-y-6">
             <div>
