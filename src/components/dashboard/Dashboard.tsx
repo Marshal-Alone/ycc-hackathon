@@ -402,9 +402,9 @@ const stats = {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
-                            <h3 className="font-semibold text-lg">{booking.listing.title}</h3>
+                            <h3 className="font-semibold text-lg">{booking.listing?.title || 'N/A'}</h3>
                             <p className="text-muted-foreground">
-                              Rented by {booking.renter.name ? booking.renter.name : 'N/A'}
+                              Rented by {booking.renter?.name || 'N/A'}
                             </p>
                             <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
                               <div className="flex items-center space-x-1">
