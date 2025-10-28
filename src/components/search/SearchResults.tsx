@@ -121,7 +121,7 @@ export function SearchResults({ user, onNavigate }: SearchResultsProps) {
       }
 
       console.log("Frontend Search Request Params:", params.toString());
-      const response = await API.get(`/listings/search?${params.toString()}`);
+      const response = await API.get(`/api/listings/search?${params.toString()}`);
       console.log("Frontend Search Results Received:", response.data);
       setResults(response.data);
     } catch (err: any) {

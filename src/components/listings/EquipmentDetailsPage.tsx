@@ -58,7 +58,7 @@ const EquipmentDetailsPage = () => {
   useEffect(() => {
     const fetchEquipment = async () => {
       try {
-        const response = await api.get(`/listings/${id}`);
+        const response = await api.get(`/api/listings/${id}`);
         setEquipment(response.data);
       } catch (err: any) {
         setError(err.response?.data?.msg || err.message);
@@ -114,7 +114,7 @@ const EquipmentDetailsPage = () => {
 
     try {
       const totalPrice = calculateTotalPrice();
-      await api.post('/bookings', {
+      await api.post('/api/bookings', {
         listingId: equipment._id,
         startDate: bookingDetails.startDate.toISOString(),
         endDate: bookingDetails.endDate.toISOString(),
@@ -128,7 +128,7 @@ const EquipmentDetailsPage = () => {
       setBookingSuccess('Booking successful!');
       setShowBookingModal(false);
       // Optionally refresh equipment data to show updated availability
-      const response = await api.get(`/listings/${id}`);
+      const response = await api.get(`/api/listings/${id}`);
       setEquipment(response.data);
     } catch (err: any) {
       setBookingError(err.response?.data?.msg || 'Booking failed. Please try again.');

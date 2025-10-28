@@ -131,7 +131,7 @@ export function HomePage({
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const { data: listingsData } = await API.get('/listings');
+        const { data: listingsData } = await API.get('/api/listings');
         setListings(listingsData);
       } catch (error) {
         console.error("Error fetching listings:", error);

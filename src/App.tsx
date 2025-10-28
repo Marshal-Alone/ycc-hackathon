@@ -44,7 +44,7 @@ function AppContent() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const { data } = await API.get('/auth/me');
+          const { data } = await API.get('/api/auth/me');
           setUser(data);
           if (data.role === 'admin') {
             navigate('/admin');
@@ -114,7 +114,7 @@ function AppContent() {
           <Route path="/listing" element={<ListingPage user={user} onNavigate={navigateTo} onLogout={handleLogout} onListingCreated={handleListingCreated} />} />
           <Route path="/listing/:listingId" element={<ListingPage user={user} onNavigate={navigateTo} onLogout={handleLogout} onListingCreated={handleListingCreated} />} />
           <Route path="/equipment/:id" element={<EquipmentDetailsPage />} />
-          <Route path="/search" element={<SearchResults user={user} searchQuery={searchQuery} onNavigate={navigateTo} onLogout={handleLogout} />} />
+          <Route path="/search" element={<SearchResults user={user} onNavigate={navigateTo} onLogout={handleLogout} />} />
           <Route path="/chat" element={<ChatPage user={user} onNavigate={navigateTo} onLogout={handleLogout} />} />
           <Route path="/profile" element={<ProfilePage user={user} onLogout={handleLogout} />} />
           {user.role === 'admin' && (

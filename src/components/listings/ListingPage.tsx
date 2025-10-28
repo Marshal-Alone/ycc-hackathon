@@ -90,7 +90,7 @@ export function ListingPage({ user, onNavigate, onListingCreated, listingId }: L
         return;
       }
       try {
-        const { data } = await api.get('/listings/my');
+        const { data } = await api.get('/api/listings/my');
         setUserListings(data);
       } catch (error) {
         console.error('Error fetching user listings:', error);
@@ -138,7 +138,7 @@ export function ListingPage({ user, onNavigate, onListingCreated, listingId }: L
     const fetchListingDetails = async () => {
       if (listingId && !editMode) {
         try {
-          const { data } = await api.get(`/listings/${listingId}`);
+          const { data } = await api.get(`/api/listings/${listingId}`);
           setCurrentListingDetails(data);
         } catch (error) {
           console.error('Error fetching listing details:', error);
@@ -178,10 +178,10 @@ export function ListingPage({ user, onNavigate, onListingCreated, listingId }: L
  
        let res;
        if (editMode && currentListingId) {
-         res = await api.put(`/listings/${currentListingId}`, fd);
+         res = await api.put(`/api/listings/${currentListingId}`, fd);
          toast.success('Listing updated successfully!');
        } else {
-         res = await api.post('/listings', fd);
+         res = await api.post('/api/listings', fd);
          toast.success('Listing created successfully!');
        }
        
@@ -242,7 +242,7 @@ export function ListingPage({ user, onNavigate, onListingCreated, listingId }: L
       return;
     }
     try {
-      await api.delete(`/listings/${listingId}`);
+      await api.delete(`/api/listings/${listingId}`);
       toast.success('Listing deleted successfully!');
       onListingCreated();
     } catch (error: any) {

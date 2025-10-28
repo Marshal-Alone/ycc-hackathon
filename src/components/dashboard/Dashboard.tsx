@@ -114,7 +114,7 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
         return;
       }
       try {
-        const { data } = await api.get('/listings/my');
+        const { data } = await api.get('/api/listings/my');
         setMyListings(data);
       } catch (error) {
         console.error('Error fetching my listings:', error);
@@ -130,7 +130,7 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
         return;
       }
       try {
-        const { data } = await api.get('/bookings/owner');
+        const { data } = await api.get('/api/bookings/owner');
         setMyBookings(data);
       } catch (error) {
         console.error('Error fetching my bookings:', error);
@@ -146,10 +146,10 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
 
   const handleApproveBooking = async (bookingId: string) => {
     try {
-      await api.put(`/bookings/${bookingId}/approve`);
+      await api.put(`/api/bookings/${bookingId}/approve`);
       toast.success('Booking approved successfully!');
       // Re-fetch bookings to update the UI
-      const { data } = await api.get('/bookings/owner');
+      const { data } = await api.get('/api/bookings/owner');
       setMyBookings(data);
     } catch (error: any) {
       console.error('Error approving booking:', error.response?.data || error.message);
@@ -159,10 +159,10 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
 
   const handleDeclineBooking = async (bookingId: string) => {
     try {
-      await api.put(`/bookings/${bookingId}/decline`);
+      await api.put(`/api/bookings/${bookingId}/decline`);
       toast.success('Booking declined successfully!');
       // Re-fetch bookings to update the UI
-      const { data } = await api.get('/bookings/owner');
+      const { data } = await api.get('/api/bookings/owner');
       setMyBookings(data);
     } catch (error: any) {
       console.error('Error declining booking:', error.response?.data || error.message);
@@ -175,13 +175,13 @@ export function Dashboard({ user, onNavigate, onLogout, refreshTrigger }: Dashbo
       return;
     }
     try {
-      await api.delete(`/listings/${listingId}`);
+      await api.delete(`/api/listings/${listingId}`);
       toast.success('Listing deleted successfully!');
       // Trigger a refresh of listings in the dashboard
       // This will be handled by the refreshTrigger prop from App.tsx
       // For now, manually re-fetch or rely on parent component to update refreshTrigger
       // For simplicity, I'll just re-fetch here.
-      const { data } = await api.get('/listings/my');
+      const { data } = await api.get('/api/listings/my');
       setMyListings(data);
     } catch (error: any) {
       console.error('Error deleting listing:', error.response?.data || error.message);

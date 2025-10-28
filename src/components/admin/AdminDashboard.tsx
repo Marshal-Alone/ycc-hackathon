@@ -148,7 +148,7 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
   useEffect(() => {
     const fetchRecentUsers = async () => {
       try {
-        const { data } = await API.get('/admin/recent-users');
+        const { data } = await API.get('/api/admin/recent-users');
         setRecentUsers(data);
       } catch (error) {
         setError('Failed to fetch recent users.');
@@ -160,7 +160,7 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
     fetchRecentUsers();
     const fetchStats = async () => {
       try {
-        const { data } = await API.get('/admin/analytics');
+        const { data } = await API.get('/api/admin/analytics');
         setStats(data);
       } catch (error) {
         console.error(error);
@@ -210,9 +210,9 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                     className="flex items-center space-x-2 cursor-pointer"
                   >
                     <Avatar>
-                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>{(user.name || 'Admin').charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span>{user.name}</span>
+                    <span>{user.name || 'Admin User'}</span>
                   </motion.div>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -351,16 +351,16 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                               <TableCell>
                                 <div className="flex items-center space-x-3">
                                   <Avatar className="h-8 w-8">
-                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                    <AvatarFallback>{user.name ? user.name.charAt(0) : '?'}</AvatarFallback>
                                   </Avatar>
                                   <div>
-                                    <p className="font-medium">{user.name}</p>
-                                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                                    <p className="font-medium">{user.name || 'Unknown User'}</p>
+                                    <p className="text-sm text-muted-foreground">{user.email || 'No email'}</p>
                                   </div>
                                 </div>
                               </TableCell>
-                              <TableCell className="capitalize">{user.role}</TableCell>
-                              <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                              <TableCell className="capitalize">{user.role || 'Unknown'}</TableCell>
+                              <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown date'}</TableCell>
                               <TableCell>
                                 <Button variant="outline" size="sm">
                                   View Profile
@@ -387,13 +387,13 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {mockListings.filter(listing => listing.flagged).map((listing) => (
-                        <div key={listing.id} className="flex items-center justify-between">
+                      {mockListings.filter((listing: any) => listing?.flagged).map((listing: any) => (
+                        <div key={listing?.id} className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
                             <AlertTriangle className="h-5 w-5 text-yellow-500" />
                             <div>
-                              <p className="font-medium">{listing.title}</p>
-                              <p className="text-sm text-muted-foreground">by {listing.owner}</p>
+                              <p className="font-medium">{listing?.title || 'Unknown listing'}</p>
+                              <p className="text-sm text-muted-foreground">by {listing?.owner || 'Unknown owner'}</p>
                             </div>
                           </div>
                           <div className="flex space-x-2">
@@ -401,6 +401,7 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                           </div>
                         </div>
                       ))}
+                      <p className="text-muted-foreground">No flagged content at this time.</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -435,49 +436,11 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{user.location}</TableCell>
-                        <TableCell>{user.joinDate}</TableCell>
-                        <TableCell>{user.totalListings}</TableCell>
-                        <TableCell>{user.totalBookings}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
-                            {user.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleApproveUser(user.id)}>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Approve
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleSuspendUser(user.id)}>
-                                <XCircle className="mr-2 h-4 w-4" />
-                                Suspend
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
+                        No user data available
+                      </TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               </Card>
@@ -512,34 +475,34 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockListings.map((listing) => (
-                      <TableRow key={listing.id}>
+                    {mockListings.map((listing: any) => (
+                      <TableRow key={listing?.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
-                            {listing.flagged && <AlertTriangle className="h-4 w-4 text-yellow-500" />}
+                            {listing?.flagged && <AlertTriangle className="h-4 w-4 text-yellow-500" />}
                             <div>
-                              <p className="font-medium">{listing.title}</p>
-                              <p className="text-sm text-muted-foreground">Added {listing.dateAdded}</p>
+                              <p className="font-medium">{listing?.title || 'Unknown listing'}</p>
+                              <p className="text-sm text-muted-foreground">Added {listing?.dateAdded || 'Unknown date'}</p>
                             </div>
                           </div>
                         </TableCell>
-                        <TableCell>{listing.owner}</TableCell>
-                        <TableCell className="capitalize">{listing.category}</TableCell>
-                        <TableCell>₹{listing.price}/day</TableCell>
+                        <TableCell>{listing?.owner || 'Unknown owner'}</TableCell>
+                        <TableCell className="capitalize">{listing?.category || 'Unknown'}</TableCell>
+                        <TableCell>₹{listing?.price !== undefined ? listing?.price : 0}/day</TableCell>
                         <TableCell>
                           <Badge variant={
-                            listing.status === 'active' ? 'default' :
-                            listing.status === 'pending' ? 'secondary' : 'destructive'
+                            listing?.status === 'active' ? 'default' :
+                            listing?.status === 'pending' ? 'secondary' : 'destructive'
                           }>
-                            {listing.status}
+                            {listing?.status || 'Unknown'}
                           </Badge>
                         </TableCell>
-                        <TableCell>{listing.bookings}</TableCell>
+                        <TableCell>{listing?.bookings !== undefined ? listing?.bookings : 0}</TableCell>
                         <TableCell>
-                          {listing.rating > 0 ? (
+                          {listing?.rating > 0 ? (
                             <div className="flex items-center space-x-1">
                               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span>{listing.rating}</span>
+                              <span>{listing?.rating || 0}</span>
                             </div>
                           ) : (
                             <span className="text-muted-foreground">No reviews</span>
@@ -553,11 +516,11 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleApproveListing(listing.id)}>
+                              <DropdownMenuItem onClick={() => handleApproveListing(listing?.id || '')}>
                                 <CheckCircle className="mr-2 h-4 w-4" />
                                 Approve
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleRejectListing(listing.id)}>
+                              <DropdownMenuItem onClick={() => handleRejectListing(listing?.id || '')}>
                                 <XCircle className="mr-2 h-4 w-4" />
                                 Reject
                               </DropdownMenuItem>
@@ -566,6 +529,11 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                         </TableCell>
                       </TableRow>
                     ))}
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground">
+                        No listings data available
+                      </TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               </Card>
@@ -600,25 +568,25 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {mockBookings.map((booking) => (
-                      <TableRow key={booking.id}>
-                        <TableCell>{booking.listing}</TableCell>
-                        <TableCell>{booking.renter}</TableCell>
-                        <TableCell>{booking.owner}</TableCell>
+                    {mockBookings.map((booking: any) => (
+                      <TableRow key={booking?.id}>
+                        <TableCell>{booking?.listing || 'Unknown listing'}</TableCell>
+                        <TableCell>{booking?.renter || 'Unknown renter'}</TableCell>
+                        <TableCell>{booking?.owner || 'Unknown owner'}</TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <p>{booking.startDate}</p>
-                            <p className="text-muted-foreground">to {booking.endDate}</p>
+                            <p>{booking?.startDate || 'Unknown start date'}</p>
+                            <p className="text-muted-foreground">to {booking?.endDate || 'Unknown end date'}</p>
                           </div>
                         </TableCell>
-                        <TableCell>₹{booking.amount.toLocaleString()}</TableCell>
-                        <TableCell>₹{booking.commission.toLocaleString()}</TableCell>
+                        <TableCell>₹{booking?.amount !== undefined ? booking?.amount.toLocaleString() : 0}</TableCell>
+                        <TableCell>₹{booking?.commission !== undefined ? booking?.commission.toLocaleString() : 0}</TableCell>
                         <TableCell>
                           <Badge variant={
-                            booking.status === 'confirmed' ? 'default' :
-                            booking.status === 'disputed' ? 'destructive' : 'secondary'
+                            booking?.status === 'confirmed' ? 'default' :
+                            booking?.status === 'disputed' ? 'destructive' : 'secondary'
                           }>
-                            {booking.status}
+                            {booking?.status || 'Unknown'}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -628,6 +596,11 @@ export function AdminDashboard({ user, onNavigate, handleLogout }: AdminDashboar
                         </TableCell>
                       </TableRow>
                     ))}
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center text-muted-foreground">
+                        No booking data available
+                      </TableCell>
+                    </TableRow>
                   </TableBody>
                 </Table>
               </Card>
