@@ -53,9 +53,9 @@ export function RegisterPage({ onRegister, onNavigateToLogin }: RegisterPageProp
     setIsLoading(true);
 
     try {
-      const { data } = await API.post('/auth/signup', formData);
+      const { data } = await API.post('/api/auth/signup', formData);
       localStorage.setItem('token', data.token);
-      const userResponse = await API.get('/auth/me', {
+      const userResponse = await API.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${data.token}` },
       });
       onRegister(userResponse.data);

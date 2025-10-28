@@ -40,9 +40,9 @@ export function LoginPage({ onLogin, onNavigateToRegister }: LoginPageProps) {
     setIsLoading(true);
 
     try {
-      const { data } = await API.post('/auth/login', { email, password });
+      const { data } = await API.post('/api/auth/login', { email, password });
       localStorage.setItem('token', data.token);
-      const userResponse = await API.get('/auth/me', {
+      const userResponse = await API.get('/api/auth/me', {
         headers: { Authorization: `Bearer ${data.token}` },
       });
       onLogin(userResponse.data);
@@ -211,8 +211,8 @@ export function LoginPage({ onLogin, onNavigateToRegister }: LoginPageProps) {
               <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
                 <h4 className="text-sm font-semibold text-green-800 mb-2">Demo Credentials:</h4>
                 <div className="text-xs text-green-700 space-y-1">
-                  <div><strong>Farmer:</strong> Use any email + password</div>
-                  <div><strong>Admin:</strong> admin@farmrent.com + password</div>
+                  <div><strong>Farmer:</strong> farmer@gmail.com + password (farmer@gmail.com)</div>
+                  <div><strong>Admin:</strong> admin@farmrent.com + password (admin@farmrent.com)</div>
                 </div>
               </div>
             </CardContent>
